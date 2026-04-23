@@ -8,78 +8,236 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
-    <div class="container mt-5">
-        <h1 class="text-center mb-4">Customer Churn Prediction</h1>
+    <div class="container mt-5 mb-5">
+        <h1 class="text-center mb-2">Customer Churn Prediction</h1>
         <h2 class="text-center text-muted mb-4">Financial Services</h2>
-        
+
         <div class="row">
-            <div class="col-md-6">
+            <!-- ===== INPUT FORM ===== -->
+            <div class="col-lg-7">
                 <div class="card">
                     <div class="card-header bg-primary text-white">
-                        <h3>Customer Information</h3>
+                        <h3 class="mb-0">Customer Information</h3>
                     </div>
                     <div class="card-body">
                         <form action="/predict" method="POST" id="predictionForm">
-                            <div class="mb-3">
-                                <label for="total_logins" class="form-label">Total Logins</label>
-                                <input type="number" class="form-control" id="total_logins" name="total_logins" 
-                                    value="{{ form_data.total_logins if form_data }}" required step="0.01" min="0">
+
+                            <!-- Section: Demographics -->
+                            <h5 class="section-title">Demographics</h5>
+                            <div class="row">
+                                <div class="col-md-4 mb-3">
+                                    <label for="age" class="form-label">Age</label>
+                                    <input type="number" class="form-control" id="age" name="age"
+                                        value="{{ form_data.age if form_data }}" required min="18" max="100">
+                                </div>
+                                <div class="col-md-4 mb-3">
+                                    <label for="gender" class="form-label">Gender</label>
+                                    <select class="form-select" id="gender" name="gender" required>
+                                        <option value="" disabled {{ 'selected' if not form_data or not form_data.gender }}>Select...</option>
+                                        <option value="Female" {{ 'selected' if form_data and form_data.gender == 'Female' }}>Female</option>
+                                        <option value="Male" {{ 'selected' if form_data and form_data.gender == 'Male' }}>Male</option>
+                                        <option value="Other" {{ 'selected' if form_data and form_data.gender == 'Other' }}>Other</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-4 mb-3">
+                                    <label for="location" class="form-label">Location</label>
+                                    <select class="form-select" id="location" name="location" required>
+                                        <option value="" disabled {{ 'selected' if not form_data or not form_data.location }}>Select...</option>
+                                        <option value="East" {{ 'selected' if form_data and form_data.location == 'East' }}>East</option>
+                                        <option value="North" {{ 'selected' if form_data and form_data.location == 'North' }}>North</option>
+                                        <option value="South" {{ 'selected' if form_data and form_data.location == 'South' }}>South</option>
+                                        <option value="West" {{ 'selected' if form_data and form_data.location == 'West' }}>West</option>
+                                    </select>
+                                </div>
                             </div>
-                            
-                            <div class="mb-3">
-                                <label for="tickets_raised" class="form-label">Tickets Raised</label>
-                                <input type="number" class="form-control" id="tickets_raised" name="tickets_raised" 
-                                    value="{{ form_data.tickets_raised if form_data }}" required min="0">
+                            <div class="row">
+                                <div class="col-md-4 mb-3">
+                                    <label for="occupation" class="form-label">Occupation</label>
+                                    <select class="form-select" id="occupation" name="occupation" required>
+                                        <option value="" disabled {{ 'selected' if not form_data or not form_data.occupation }}>Select...</option>
+                                        <option value="Retired" {{ 'selected' if form_data and form_data.occupation == 'Retired' }}>Retired</option>
+                                        <option value="Salaried" {{ 'selected' if form_data and form_data.occupation == 'Salaried' }}>Salaried</option>
+                                        <option value="Self-employed" {{ 'selected' if form_data and form_data.occupation == 'Self-employed' }}>Self-employed</option>
+                                        <option value="Student" {{ 'selected' if form_data and form_data.occupation == 'Student' }}>Student</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-4 mb-3">
+                                    <label for="income_bracket" class="form-label">Income Bracket</label>
+                                    <select class="form-select" id="income_bracket" name="income_bracket" required>
+                                        <option value="" disabled {{ 'selected' if not form_data or not form_data.income_bracket }}>Select...</option>
+                                        <option value="High" {{ 'selected' if form_data and form_data.income_bracket == 'High' }}>High</option>
+                                        <option value="Low" {{ 'selected' if form_data and form_data.income_bracket == 'Low' }}>Low</option>
+                                        <option value="Medium" {{ 'selected' if form_data and form_data.income_bracket == 'Medium' }}>Medium</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-4 mb-3">
+                                    <label for="credit_score" class="form-label">Credit Score</label>
+                                    <input type="number" class="form-control" id="credit_score" name="credit_score"
+                                        value="{{ form_data.credit_score if form_data }}" required min="300" max="900">
+                                </div>
                             </div>
-                            
-                            <div class="mb-3">
-                                <label for="onboarding_year" class="form-label">Onboarding Year</label>
-                                <input type="number" class="form-control" id="onboarding_year" name="onboarding_year" 
-                                    value="{{ form_data.onboarding_year if form_data }}" required min="2000" max="{{ current_year }}" onchange="calculateTenure()">
+
+                            <!-- Section: Account & Channel -->
+                            <h5 class="section-title">Account & Channel</h5>
+                            <div class="row">
+                                <div class="col-md-4 mb-3">
+                                    <label for="channel" class="form-label">Channel</label>
+                                    <select class="form-select" id="channel" name="channel" required>
+                                        <option value="" disabled {{ 'selected' if not form_data or not form_data.channel }}>Select...</option>
+                                        <option value="Agent" {{ 'selected' if form_data and form_data.channel == 'Agent' }}>Agent</option>
+                                        <option value="Branch" {{ 'selected' if form_data and form_data.channel == 'Branch' }}>Branch</option>
+                                        <option value="Online" {{ 'selected' if form_data and form_data.channel == 'Online' }}>Online</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-4 mb-3">
+                                    <label for="device_type" class="form-label">Device Type</label>
+                                    <select class="form-select" id="device_type" name="device_type" required>
+                                        <option value="" disabled {{ 'selected' if not form_data or not form_data.device_type }}>Select...</option>
+                                        <option value="Android" {{ 'selected' if form_data and form_data.device_type == 'Android' }}>Android</option>
+                                        <option value="Web" {{ 'selected' if form_data and form_data.device_type == 'Web' }}>Web</option>
+                                        <option value="iOS" {{ 'selected' if form_data and form_data.device_type == 'iOS' }}>iOS</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-4 mb-3">
+                                    <label for="current_plan" class="form-label">Current Plan</label>
+                                    <select class="form-select" id="current_plan" name="current_plan" required>
+                                        <option value="" disabled {{ 'selected' if not form_data or not form_data.current_plan }}>Select...</option>
+                                        <option value="Basic" {{ 'selected' if form_data and form_data.current_plan == 'Basic' }}>Basic</option>
+                                        <option value="Gold" {{ 'selected' if form_data and form_data.current_plan == 'Gold' }}>Gold</option>
+                                        <option value="Platinum" {{ 'selected' if form_data and form_data.current_plan == 'Platinum' }}>Platinum</option>
+                                        <option value="Silver" {{ 'selected' if form_data and form_data.current_plan == 'Silver' }}>Silver</option>
+                                    </select>
+                                </div>
                             </div>
-                            
-                            <div class="mb-3">
-                                <label for="customer_tenure" class="form-label">Customer Tenure (Years) - Auto-calculated</label>
-                                <input type="number" class="form-control" id="customer_tenure" name="customer_tenure" 
-                                    value="{{ form_data.customer_tenure if form_data }}" required step="0.01" readonly>
-                                <div class="form-text">Calculated as Current Year ({{ current_year }}) - Onboarding Year</div>
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="payment_mode" class="form-label">Payment Mode</label>
+                                    <select class="form-select" id="payment_mode" name="payment_mode" required>
+                                        <option value="" disabled {{ 'selected' if not form_data or not form_data.payment_mode }}>Select...</option>
+                                        <option value="Auto" {{ 'selected' if form_data and form_data.payment_mode == 'Auto' }}>Auto</option>
+                                        <option value="Manual" {{ 'selected' if form_data and form_data.payment_mode == 'Manual' }}>Manual</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label for="total_logins" class="form-label">Total Logins</label>
+                                    <input type="number" class="form-control" id="total_logins" name="total_logins"
+                                        value="{{ form_data.total_logins if form_data }}" required step="0.01" min="0">
+                                </div>
                             </div>
-                            
-                            <div class="mb-3">
-                                <label for="sentiment_score" class="form-label">Sentiment Score (0-1)</label>
-                                <input type="number" class="form-control" id="sentiment_score" name="sentiment_score" 
-                                    value="{{ form_data.sentiment_score if form_data }}" required step="0.000001" min="0" max="1">
+
+                            <!-- Section: Financial Activity -->
+                            <h5 class="section-title">Financial Activity</h5>
+                            <div class="row">
+                                <div class="col-md-4 mb-3">
+                                    <label for="loans_accessed" class="form-label">Loans Accessed</label>
+                                    <input type="number" class="form-control" id="loans_accessed" name="loans_accessed"
+                                        value="{{ form_data.loans_accessed if form_data }}" required min="0">
+                                </div>
+                                <div class="col-md-4 mb-3">
+                                    <label for="savings_accessed" class="form-label">Savings Accessed</label>
+                                    <input type="number" class="form-control" id="savings_accessed" name="savings_accessed"
+                                        value="{{ form_data.savings_accessed if form_data }}" required min="0">
+                                </div>
+                                <div class="col-md-4 mb-3">
+                                    <label for="loans_taken" class="form-label">Loans Taken</label>
+                                    <input type="number" class="form-control" id="loans_taken" name="loans_taken"
+                                        value="{{ form_data.loans_taken if form_data }}" required min="0">
+                                </div>
                             </div>
-                            
-                            <div class="mb-3">
-                                <label for="loans_accessed" class="form-label">Loans Accessed</label>
-                                <input type="number" class="form-control" id="loans_accessed" name="loans_accessed" 
-                                    value="{{ form_data.loans_accessed if form_data }}" required step="0.01" min="0">
+                            <div class="row">
+                                <div class="col-md-4 mb-3">
+                                    <label for="monthly_avg_balance" class="form-label">Monthly Avg Balance</label>
+                                    <input type="number" class="form-control" id="monthly_avg_balance" name="monthly_avg_balance"
+                                        value="{{ form_data.monthly_avg_balance if form_data }}" required step="0.01" min="0">
+                                </div>
+                                <div class="col-md-4 mb-3">
+                                    <label for="repayment_misses" class="form-label">Repayment Misses</label>
+                                    <input type="number" class="form-control" id="repayment_misses" name="repayment_misses"
+                                        value="{{ form_data.repayment_misses if form_data }}" required min="0">
+                                </div>
+                                <div class="col-md-4 mb-3">
+                                    <label for="overdraft_events" class="form-label">Overdraft Events</label>
+                                    <input type="number" class="form-control" id="overdraft_events" name="overdraft_events"
+                                        value="{{ form_data.overdraft_events if form_data }}" required min="0">
+                                </div>
                             </div>
-                            
-                            <div class="mb-3">
-                                <label for="loans_taken" class="form-label">Loans Taken</label>
-                                <input type="number" class="form-control" id="loans_taken" name="loans_taken" 
-                                    value="{{ form_data.loans_taken if form_data }}" required step="0.01" min="0">
+                            <div class="row">
+                                <div class="col-md-4 mb-3">
+                                    <label for="failed_payments" class="form-label">Failed Payments</label>
+                                    <input type="number" class="form-control" id="failed_payments" name="failed_payments"
+                                        value="{{ form_data.failed_payments if form_data }}" required min="0">
+                                </div>
                             </div>
-                            
-                            <div class="mb-3">
-                                <label for="monthly_avg_balance" class="form-label">Monthly Average Balance</label>
-                                <input type="number" class="form-control" id="monthly_avg_balance" name="monthly_avg_balance" 
-                                    value="{{ form_data.monthly_avg_balance if form_data }}" required step="0.01" min="0">
+
+                            <!-- Section: Support & Engagement -->
+                            <h5 class="section-title">Support & Engagement</h5>
+                            <div class="row">
+                                <div class="col-md-4 mb-3">
+                                    <label for="tickets_raised" class="form-label">Tickets Raised</label>
+                                    <input type="number" class="form-control" id="tickets_raised" name="tickets_raised"
+                                        value="{{ form_data.tickets_raised if form_data }}" required step="0.01" min="0">
+                                </div>
+                                <div class="col-md-4 mb-3">
+                                    <label for="resolution_time" class="form-label">Resolution Time (hrs)</label>
+                                    <input type="number" class="form-control" id="resolution_time" name="resolution_time"
+                                        value="{{ form_data.resolution_time if form_data }}" required step="0.01" min="0">
+                                </div>
+                                <div class="col-md-4 mb-3">
+                                    <label for="support_intensity" class="form-label">Support Intensity</label>
+                                    <input type="number" class="form-control" id="support_intensity" name="support_intensity"
+                                        value="{{ form_data.support_intensity if form_data }}" required step="0.01" min="0">
+                                </div>
                             </div>
-                            
-                            <button type="submit" class="btn btn-primary w-100">Predict Churn Risk</button>
+                            <div class="row">
+                                <div class="col-md-4 mb-3">
+                                    <label for="sentiment_score" class="form-label">Sentiment Score (0-1)</label>
+                                    <input type="number" class="form-control" id="sentiment_score" name="sentiment_score"
+                                        value="{{ form_data.sentiment_score if form_data }}" required step="0.000001" min="0" max="1">
+                                </div>
+                                <div class="col-md-4 mb-3">
+                                    <label for="survey_feedback" class="form-label">Survey Feedback</label>
+                                    <select class="form-select" id="survey_feedback" name="survey_feedback" required>
+                                        <option value="" disabled {{ 'selected' if not form_data or not form_data.survey_feedback }}>Select...</option>
+                                        <option value="Bad" {{ 'selected' if form_data and form_data.survey_feedback == 'Bad' }}>Bad</option>
+                                        <option value="Good" {{ 'selected' if form_data and form_data.survey_feedback == 'Good' }}>Good</option>
+                                        <option value="Neutral" {{ 'selected' if form_data and form_data.survey_feedback == 'Neutral' }}>Neutral</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <!-- Section: Onboarding -->
+                            <h5 class="section-title">Onboarding</h5>
+                            <div class="row">
+                                <div class="col-md-4 mb-3">
+                                    <label for="onboarding_year" class="form-label">Onboarding Year</label>
+                                    <input type="number" class="form-control" id="onboarding_year" name="onboarding_year"
+                                        value="{{ form_data.onboarding_year if form_data }}" required min="2000" max="{{ current_year }}" onchange="calculateTenure()">
+                                </div>
+                                <div class="col-md-4 mb-3">
+                                    <label for="onboarding_month" class="form-label">Onboarding Month</label>
+                                    <input type="number" class="form-control" id="onboarding_month" name="onboarding_month"
+                                        value="{{ form_data.onboarding_month if form_data }}" required min="1" max="12">
+                                </div>
+                                <div class="col-md-4 mb-3">
+                                    <label for="customer_tenure" class="form-label">Tenure (Years) <small class="text-muted">Auto</small></label>
+                                    <input type="number" class="form-control" id="customer_tenure" name="customer_tenure"
+                                        value="{{ form_data.customer_tenure if form_data }}" required step="1" readonly>
+                                    <div class="form-text">{{ current_year }} − Onboarding Year</div>
+                                </div>
+                            </div>
+
+                            <button type="submit" class="btn btn-primary w-100 btn-lg mt-2">Predict Churn Risk</button>
                         </form>
                     </div>
                 </div>
             </div>
-            
-            <div class="col-md-6">
+
+            <!-- ===== RESULT PANEL ===== -->
+            <div class="col-lg-5">
                 {% if prediction %}
                 <div class="card">
                     <div class="card-header bg-{{ prediction.risk_color }} text-white">
-                        <h3>Prediction Result</h3>
+                        <h3 class="mb-0">Prediction Result</h3>
                     </div>
                     <div class="card-body">
                         <div class="text-center">
@@ -87,15 +245,15 @@
                             <div class="risk-level mb-3">
                                 <span class="badge bg-{{ prediction.risk_color }}">{{ prediction.risk_level }}</span>
                             </div>
-                            
+
                             <div class="progress mb-4" style="height: 30px;">
-                                <div class="progress-bar bg-{{ prediction.risk_color }}" role="progressbar" 
-                                    style="width: {{ prediction.probability }}%;" 
+                                <div class="progress-bar bg-{{ prediction.risk_color }}" role="progressbar"
+                                    style="width: {{ prediction.probability }}%;"
                                     aria-valuenow="{{ prediction.probability }}" aria-valuemin="0" aria-valuemax="100">
                                     {{ prediction.probability }}% Probability of Churn
                                 </div>
                             </div>
-                            
+
                             <div class="risk-meter">
                                 <div class="risk-labels d-flex justify-content-between mb-1">
                                     <span>Low Risk</span>
@@ -120,10 +278,10 @@
                 {% else %}
                 <div class="card">
                     <div class="card-header bg-secondary text-white">
-                        <h3>Prediction Result</h3>
+                        <h3 class="mb-0">Prediction Result</h3>
                     </div>
                     <div class="card-body">
-                        <p class="text-center">Please fill out the form to get a churn prediction.</p>
+                        <p class="text-center text-muted">Please fill out the form to get a churn prediction.</p>
                     </div>
                 </div>
                 {% endif %}
@@ -133,26 +291,23 @@
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-        // Function to calculate customer tenure based on onboarding year
+        const currentYear = {{ current_year }};
+
         function calculateTenure() {
             const onboardingYearInput = document.getElementById('onboarding_year');
             const tenureInput = document.getElementById('customer_tenure');
-            const currentYear = {{ current_year }};
-            
+
             if (onboardingYearInput.value) {
                 const onboardingYear = parseInt(onboardingYearInput.value);
-                
                 if (onboardingYear <= currentYear) {
                     tenureInput.value = currentYear - onboardingYear;
                 } else {
-                    // If onboarding year is in the future, set to 0
                     tenureInput.value = 0;
                     alert("Onboarding year cannot be in the future. Please enter a valid year.");
                 }
             }
         }
-        
-        // Calculate tenure on page load if onboarding year is already filled
+
         document.addEventListener('DOMContentLoaded', function() {
             const onboardingYearInput = document.getElementById('onboarding_year');
             if (onboardingYearInput && onboardingYearInput.value) {
