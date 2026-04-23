@@ -10,7 +10,7 @@
 <body>
     <div class="container mt-5">
         <h1 class="text-center mb-4">Customer Churn Prediction</h1>
-        <h1 class="text-center mb-4">Financial Services</h1>
+        <h2 class="text-center text-muted mb-4">Financial Services</h2>
         
         <div class="row">
             <div class="col-md-6">
@@ -23,13 +23,13 @@
                             <div class="mb-3">
                                 <label for="total_logins" class="form-label">Total Logins</label>
                                 <input type="number" class="form-control" id="total_logins" name="total_logins" 
-                                    value="{{ form_data.total_logins if form_data }}" required step="0.01">
+                                    value="{{ form_data.total_logins if form_data }}" required step="0.01" min="0">
                             </div>
                             
                             <div class="mb-3">
                                 <label for="tickets_raised" class="form-label">Tickets Raised</label>
                                 <input type="number" class="form-control" id="tickets_raised" name="tickets_raised" 
-                                    value="{{ form_data.tickets_raised if form_data }}" required>
+                                    value="{{ form_data.tickets_raised if form_data }}" required min="0">
                             </div>
                             
                             <div class="mb-3">
@@ -54,19 +54,19 @@
                             <div class="mb-3">
                                 <label for="loans_accessed" class="form-label">Loans Accessed</label>
                                 <input type="number" class="form-control" id="loans_accessed" name="loans_accessed" 
-                                    value="{{ form_data.loans_accessed if form_data }}" required step="0.01">
+                                    value="{{ form_data.loans_accessed if form_data }}" required step="0.01" min="0">
                             </div>
                             
                             <div class="mb-3">
                                 <label for="loans_taken" class="form-label">Loans Taken</label>
                                 <input type="number" class="form-control" id="loans_taken" name="loans_taken" 
-                                    value="{{ form_data.loans_taken if form_data }}" required step="0.01">
+                                    value="{{ form_data.loans_taken if form_data }}" required step="0.01" min="0">
                             </div>
                             
                             <div class="mb-3">
                                 <label for="monthly_avg_balance" class="form-label">Monthly Average Balance</label>
                                 <input type="number" class="form-control" id="monthly_avg_balance" name="monthly_avg_balance" 
-                                    value="{{ form_data.monthly_avg_balance if form_data }}" required step="0.01">
+                                    value="{{ form_data.monthly_avg_balance if form_data }}" required step="0.01" min="0">
                             </div>
                             
                             <button type="submit" class="btn btn-primary w-100">Predict Churn Risk</button>

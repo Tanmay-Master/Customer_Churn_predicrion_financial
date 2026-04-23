@@ -6,6 +6,7 @@ import joblib
 from flask import Flask, jsonify, render_template, request
 
 app = Flask(__name__)
+app.config['SECRET_KEY'] = os.getenv('SECRET_KEY', os.urandom(24))
 BASE_DIR = Path(__file__).resolve().parent
 
 # Initialize model as None
@@ -29,14 +30,14 @@ def load_model():
         for path in _model_paths():
             if path.exists():
                 model = joblib.load(path)
-                print(f"Model loaded successfully from: {path}")
+                app.logger.info(f"Model loaded successfully from: {path}")
                 return
 
-        print("Error: Could not find model file. Checked paths:")
+        app.logger.error("Error: Could not find model file. Checked paths:")
         for path in _model_paths():
-            print(f"  - {path}")
+            app.logger.error(f"  - {path}")
     except Exception as e:
-        print(f"Error loading model: {str(e)}")
+        app.logger.exception(f"Error loading model: {str(e)}")
 
 
 load_model()
@@ -104,9 +105,10 @@ def predict():
         )
     
     except Exception as e:
+        app.logger.exception("Prediction error")
         return render_template(
             'index.html',
-            error=str(e),
+            error="An unexpected error occurred. Please check your inputs and try again.",
             form_data=request.form.to_dict(),
             current_year=_current_year(),
         )
