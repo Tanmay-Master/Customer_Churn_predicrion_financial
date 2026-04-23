@@ -13,59 +13,28 @@ BASE_DIR = Path(__file__).resolve().parent
 # Initialize model as None
 model = None
 
-# Label encoding mappings (from training notebook - alphabetically sorted by LabelEncoder)
-LABEL_ENCODINGS = {
-    'Gender':          {'Female': 0, 'Male': 1, 'Other': 2},
-    'Location':        {'East': 0, 'North': 1, 'South': 2, 'West': 3},
-    'Occupation':      {'Retired': 0, 'Salaried': 1, 'Self-employed': 2, 'Student': 3},
-    'Income Bracket':  {'High': 0, 'Low': 1, 'Medium': 2},
-    'Channel':         {'Agent': 0, 'Branch': 1, 'Online': 2},
-    'Device Type':     {'Android': 0, 'Web': 1, 'iOS': 2},
-    'Current Plan':    {'Basic': 0, 'Gold': 1, 'Platinum': 2, 'Silver': 3},
-    'Payment Mode':    {'Auto': 0, 'Manual': 1},
-    'Survey Feedback': {'Bad': 0, 'Good': 1, 'Neutral': 2},
-}
-
-# Feature names in the exact order the model expects
+# Selected features only (8 features from the notebook)
 FEATURE_NAMES = [
-    'Age', 'Gender', 'Location', 'Occupation', 'Income Bracket',
-    'Credit Score', 'Channel', 'Device Type', 'Loans Accessed',
-    'Savings Accessed', 'Monthly Avg Balance', 'Loans Taken',
-    'Repayment Misses', 'Overdraft Events', 'Failed Payments',
-    'Current Plan', 'Payment Mode', 'Tickets Raised',
-    'Resolution Time (hrs)', 'Sentiment Score', 'Survey Feedback',
-    'Onboarding Year', 'Onboarding Month', 'Customer Tenuer Year',
-    'Total Logins', 'Support Intensity',
+    'Total Logins',
+    'Tickets Raised',
+    'Customer Tenuer Year',
+    'Sentiment Score',
+    'Onboarding Year',
+    'Loans Accessed',
+    'Loans Taken',
+    'Monthly Avg Balance',
 ]
 
 # Form field name -> model feature name mapping
 FORM_TO_FEATURE = {
-    'age':                  'Age',
-    'gender':               'Gender',
-    'location':             'Location',
-    'occupation':           'Occupation',
-    'income_bracket':       'Income Bracket',
-    'credit_score':         'Credit Score',
-    'channel':              'Channel',
-    'device_type':          'Device Type',
-    'loans_accessed':       'Loans Accessed',
-    'savings_accessed':     'Savings Accessed',
-    'monthly_avg_balance':  'Monthly Avg Balance',
-    'loans_taken':          'Loans Taken',
-    'repayment_misses':     'Repayment Misses',
-    'overdraft_events':     'Overdraft Events',
-    'failed_payments':      'Failed Payments',
-    'current_plan':         'Current Plan',
-    'payment_mode':         'Payment Mode',
-    'tickets_raised':       'Tickets Raised',
-    'resolution_time':      'Resolution Time (hrs)',
-    'sentiment_score':      'Sentiment Score',
-    'survey_feedback':      'Survey Feedback',
-    'onboarding_year':      'Onboarding Year',
-    'onboarding_month':     'Onboarding Month',
-    'customer_tenure':      'Customer Tenuer Year',
-    'total_logins':         'Total Logins',
-    'support_intensity':    'Support Intensity',
+    'total_logins':       'Total Logins',
+    'tickets_raised':     'Tickets Raised',
+    'customer_tenure':    'Customer Tenuer Year',
+    'sentiment_score':    'Sentiment Score',
+    'onboarding_year':    'Onboarding Year',
+    'loans_accessed':     'Loans Accessed',
+    'loans_taken':        'Loans Taken',
+    'monthly_avg_balance': 'Monthly Avg Balance',
 }
 
 
@@ -108,7 +77,6 @@ def home():
     return render_template(
         'index.html',
         current_year=_current_year(),
-        label_encodings=LABEL_ENCODINGS,
     )
 
 
@@ -119,23 +87,17 @@ def predict():
             'index.html',
             error="Model not loaded. Please contact administrator.",
             current_year=_current_year(),
-            label_encodings=LABEL_ENCODINGS,
         )
 
     try:
         data = request.form.to_dict()
 
-        # Build feature dict with proper types and label encoding
+        # Build feature dict with proper types
         feature_dict = {}
         for form_field, feature_name in FORM_TO_FEATURE.items():
             raw_value = data.get(form_field, '')
 
-            if feature_name in LABEL_ENCODINGS:
-                # Apply label encoding for categorical features
-                feature_dict[feature_name] = LABEL_ENCODINGS[feature_name][raw_value]
-            elif feature_name in ('Age', 'Credit Score', 'Loans Accessed', 'Savings Accessed',
-                                  'Loans Taken', 'Repayment Misses', 'Overdraft Events',
-                                  'Failed Payments', 'Onboarding Year', 'Onboarding Month'):
+            if feature_name in ('Onboarding Year', 'Loans Accessed', 'Loans Taken', 'Customer Tenuer Year'):
                 feature_dict[feature_name] = int(raw_value)
             else:
                 feature_dict[feature_name] = float(raw_value)
@@ -173,7 +135,6 @@ def predict():
             prediction=result,
             form_data=data,
             current_year=_current_year(),
-            label_encodings=LABEL_ENCODINGS,
         )
 
     except Exception as e:
@@ -183,7 +144,6 @@ def predict():
             error="An unexpected error occurred. Please check your inputs and try again.",
             form_data=request.form.to_dict(),
             current_year=_current_year(),
-            label_encodings=LABEL_ENCODINGS,
         )
 
 
