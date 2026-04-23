@@ -1,97 +1,96 @@
-🏦 Customer Churn Prediction — Web Application
-This repository contains a Flask-based web application for predicting customer churn in the financial services domain.
-It integrates Machine Learning (CatBoostClassifier) with a user-friendly HTML/Bootstrap frontend to help businesses identify customers at risk of churn and proactively design retention strategies.
+# Customer Churn Prediction (Financial Services)
 
-📂 Repository Structure
-/Churn Prediction
-│
+Flask web app that predicts customer churn risk using a trained `CatBoostClassifier`.
+
+## What Was Kept Same
+
+- Existing UI flow (`/` form -> `/predict` result page)
+- Existing model artifact usage
+- Existing churn probability + risk band output
+
+## Deployment-Ready Improvements
+
+- Added robust model loading (supports `MODEL_PATH`, `selectedCatBoostClassifier.pkl`, and `CatBoostClassifier.pkl`)
+- Added production runtime config (`HOST`, `PORT`, `FLASK_DEBUG`)
+- Added health check endpoint: `GET /health`
+- Added `wsgi.py` for WSGI servers
+- Added `Procfile` (`web: gunicorn wsgi:app`)
+- Updated dependencies to runtime-required packages
+- Updated onboarding year/tenure logic to use dynamic current year
+
+## Project Structure
+
+```
+Customer_Churn_predicrion_financial/
+├── app.py
+├── wsgi.py
+├── Procfile
+├── requirements.txt
+├── CatBoostClassifier.pkl
 ├── templates/
-│   └── index.html                # Main web interface (HTML + JavaScript)
-│
-├── static/
-│   └── Style.css                 # Custom CSS & Bootstrap overrides
-│
-├── selectedCatBoostClassifier.pkl # Final trained CatBoost model (production-ready)
-├── app.py                        # Flask backend (application logic & API endpoints)
-└── README.md                     # Project documentation
+│   └── index.html
+└── static/
+    └── style.css
+```
 
-🚀 Features
+## Run Locally
 
-Frontend: Clean Bootstrap interface with JS interactivity.
+1. Create and activate virtual environment:
 
-Backend: Flask handles requests and serves predictions.
+```bash
+python -m venv .venv
+```
 
-Model: CatBoostClassifier (high-accuracy, production-selected model).
+Windows:
+```bash
+.venv\Scripts\activate
+```
 
-Prediction Output: Probability of churn + churn label (0 = Retained, 1 = Churned).
+Linux/Mac:
+```bash
+source .venv/bin/activate
+```
 
-Custom Styling: Style.css to override default Bootstrap theme.
+2. Install dependencies:
 
-🧠 Machine Learning Model
-
-Model Used: CatBoostClassifier
-
-Training Data: Processed banking customer dataset (10k customers → balanced to 15,288 rows with SMOTE).
-
-Final Metrics:
-
-Accuracy: 0.9235
-
-F1 Score: 0.9230
-
-ROC AUC: 0.9772
-
-Selected Features:
-Total Logins, Tickets Raised, Customer Tenure Year, Sentiment Score,
-Onboarding Year, Loans Accessed, Loans Taken, Monthly Avg Balance
-
-⚙️ How to Run Locally
-1. Clone the repository
-git clone https://github.com/<your-username>/churn-prediction.git
-cd "Churn Prediction"
-
-2. Set up virtual environment & install dependencies
-python -m venv venv
-source venv/bin/activate    # Linux/Mac
-venv\Scripts\activate       # Windows
-
+```bash
 pip install -r requirements.txt
+```
 
+3. Start app:
 
-If requirements.txt is missing, install core dependencies manually:
-
-pip install flask pandas numpy scikit-learn catboost imbalanced-learn shap matplotlib seaborn
-
-3. Run the Flask app
+```bash
 python app.py
+```
 
+Open: `http://127.0.0.1:5000`
 
-Then open your browser at http://127.0.0.1:5000/
+## Environment Variables (Optional)
 
-🌐 Application Workflow
+- `MODEL_PATH` -> absolute or relative path to model file
+- `HOST` -> defaults to `0.0.0.0`
+- `PORT` -> defaults to `5000`
+- `FLASK_DEBUG` -> `true` or `false` (default `false`)
 
-User enters customer details (or uploads dataset) via index.html.
+## Deploy (Render/Heroku-like Platforms)
 
-Flask backend (app.py) loads selectedCatBoostClassifier.pkl.
+- Build command:
+```bash
+pip install -r requirements.txt
+```
+- Start command:
+```bash
+gunicorn wsgi:app
+```
 
-Model predicts churn probability and returns risk classification.
+## Health Check
 
-Results displayed on the web interface with intuitive styling.
+- Endpoint: `GET /health`
+- Sample response:
 
-🛠️ Tech Stack
-
-Frontend: HTML, CSS (Bootstrap customized) + JavaScript
-
-Backend: Flask (Python)
-
-Machine Learning: CatBoost, Scikit-learn, Pandas, NumPy
-
-Visualization & Explainability (dev phase): SHAP, Matplotlib, Seaborn
-
-📈 Business Impact
-
-Early detection of at-risk customers.
-
-Enables data-driven retention campaigns.
-
-Improves Customer Lifetime Value (CLV) and reduces churn rate.
+```json
+{
+  "status": "ok",
+  "model_loaded": true
+}
+```

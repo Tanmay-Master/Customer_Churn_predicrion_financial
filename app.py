@@ -1,38 +1,53 @@
-from flask import Flask, render_template, request, jsonify
-import joblib
-import numpy as np
-import pandas as pd
 import os
+from pathlib import Path
+from datetime import datetime, timezone
+
+import joblib
+from flask import Flask, jsonify, render_template, request
 
 app = Flask(__name__)
+BASE_DIR = Path(__file__).resolve().parent
 
 # Initialize model as None
 model = None
 
-# Try to load the model
-try:
-    # Try different possible model paths
-    model_paths = [
-        'selectedCatBoostClassifier.pkl',
+
+def _model_paths():
+    env_model = os.getenv("MODEL_PATH")
+    candidates = [
+        env_model,
+        "selectedCatBoostClassifier.pkl",
+        "CatBoostClassifier.pkl",
     ]
-    
-    for path in model_paths:
-        if os.path.exists(path):
-            model = joblib.load(path)
-            print(f"Model loaded successfully from {path}!")
-            break
-    
-    if model is None:
-        print("Error: Could not find the model file. Please ensure it exists in one of these locations:")
-        for path in model_paths:
+    return [BASE_DIR / p for p in candidates if p]
+
+
+def load_model():
+    global model
+
+    try:
+        for path in _model_paths():
+            if path.exists():
+                model = joblib.load(path)
+                print(f"Model loaded successfully from: {path}")
+                return
+
+        print("Error: Could not find model file. Checked paths:")
+        for path in _model_paths():
             print(f"  - {path}")
-            
-except Exception as e:
-    print(f"Error loading model: {str(e)}")
+    except Exception as e:
+        print(f"Error loading model: {str(e)}")
+
+
+load_model()
+
+
+def _current_year():
+    return datetime.now(timezone.utc).year
 
 @app.route('/')
 def home():
-    return render_template('index.html')
+    return render_template('index.html', current_year=_current_year())
 
 @app.route('/predict', methods=['POST'])
 def predict():
@@ -46,10 +61,10 @@ def predict():
         
         # Convert to appropriate data types and prepare for prediction
         features = [
-            int(data['total_logins']),
-            int(data['tickets_raised']),
+            float(data['total_logins']),
+            float(data['tickets_raised']),
             int(data['onboarding_year']),
-            int(data['customer_tenure']),
+            float(data['customer_tenure']),
             float(data['sentiment_score']),
             float(data['loans_accessed']),
             float(data['loans_taken']),
@@ -81,10 +96,29 @@ def predict():
             'risk_color': risk_color
         }
         
-        return render_template('index.html', prediction=result, form_data=data)
+        return render_template(
+            'index.html',
+            prediction=result,
+            form_data=data,
+            current_year=_current_year(),
+        )
     
     except Exception as e:
-        return render_template('index.html', error=str(e))
+        return render_template(
+            'index.html',
+            error=str(e),
+            form_data=request.form.to_dict(),
+            current_year=_current_year(),
+        )
+
+
+@app.route('/health', methods=['GET'])
+def health():
+    return jsonify({"status": "ok", "model_loaded": model is not None}), 200
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(
+        host=os.getenv("HOST", "0.0.0.0"),
+        port=int(os.getenv("PORT", "5000")),
+        debug=os.getenv("FLASK_DEBUG", "false").lower() == "true",
+    )
