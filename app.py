@@ -61,12 +61,15 @@ def predict():
         data = request.form.to_dict()
         
         # Convert to appropriate data types and prepare for prediction
+        # Feature order MUST match training CSV column order:
+        # Total Logins, Tickets Raised, Customer Tenure, Sentiment Score,
+        # Onboarding Year, Loans Accessed, Loans Taken, Monthly Avg Balance
         features = [
             float(data['total_logins']),
             float(data['tickets_raised']),
-            int(data['onboarding_year']),
             float(data['customer_tenure']),
             float(data['sentiment_score']),
+            int(data['onboarding_year']),
             float(data['loans_accessed']),
             float(data['loans_taken']),
             float(data['monthly_avg_balance'])
