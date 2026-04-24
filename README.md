@@ -1,305 +1,297 @@
 # 💼 Customer Churn Prediction — Financial Services
 
-A production-ready Flask web application that predicts whether a financial-services customer is likely to churn, using a trained **CatBoost** classifier. Users enter customer attributes through an intuitive web form and instantly receive a churn probability score along with a color-coded risk level.
+A Flask web app that predicts customer churn using a trained CatBoost ML model. Users enter customer data and get instant churn probability with risk classification.
 
 ---
 
-## 📌 Table of Contents
-
-- [Features](#-features)
-- [Demo](#-demo)
-- [Tech Stack](#-tech-stack)
-- [Project Structure](#-project-structure)
-- [Getting Started](#-getting-started)
-  - [Prerequisites](#prerequisites)
-  - [Clone the Repository](#1-clone-the-repository)
-  - [Create Virtual Environment](#2-create-a-virtual-environment)
-  - [Install Dependencies](#3-install-dependencies)
-  - [Run the Application](#4-run-the-application)
-- [How It Works](#-how-it-works)
-- [Input Features](#-input-features)
-- [API Endpoints](#-api-endpoints)
-- [Environment Variables](#-environment-variables)
-- [Deployment](#-deployment)
-  - [Render](#deploy-on-render)
-  - [Heroku](#deploy-on-heroku)
-  - [Railway](#deploy-on-railway)
-- [Model Training](#-model-training)
-- [License](#-license)
-
----
-
-## ✨ Features
-
-- **Instant Predictions** — Submit a form and get churn probability in real-time
-- **Risk Classification** — Results are categorized as Low / Medium / High risk with color coding
-- **Visual Risk Meter** — Progress bar and needle indicator for churn probability
-- **Auto-calculated Tenure** — Customer tenure is computed automatically from the onboarding year
-- **Health Check Endpoint** — `/health` returns model load status (useful for monitoring)
-- **Production-Ready** — Gunicorn + WSGI, environment variable configuration, structured logging
-
----
-
-## 🖥️ Demo
-
-| Form Input | Prediction Result |
-|---|---|
-| Fill in customer attributes (logins, tickets, loans, etc.) | See churn probability %, risk level badge, and visual risk meter |
-
-Once running locally, open **http://127.0.0.1:5000** in your browser.
-
----
-
-## 🛠️ Tech Stack
-
-| Component | Technology |
-|---|---|
-| **Backend** | Python 3.10+, Flask 3.x |
-| **ML Model** | CatBoost Classifier (serialized with joblib) |
-| **Frontend** | HTML5, Bootstrap 5.3, Jinja2 templates |
-| **WSGI Server** | Gunicorn 22.x |
-| **Data Processing** | NumPy, Pandas, scikit-learn |
-
----
-
-## 📁 Project Structure
-
-```
-Customer_Churn_predicrion_financial/
-│
-├── app.py                              # Main Flask application
-├── wsgi.py                             # WSGI entry point for Gunicorn
-├── Procfile                            # Process file for Render/Heroku
-├── requirements.txt                    # Python dependencies
-│
-├── CatBoostClassifier.pkl              # Trained model (serialized)
-├── customer_churn_data.csv             # Raw dataset
-├── Cleaned_Churn_Dataset.csv           # Cleaned dataset
-├── Selected_features.csv              # Feature-selected dataset
-│
-├── 1_Train_model_Churn Prediction.ipynb   # Full EDA + model training notebook
-├── 2.train selected dataset.ipynb         # Training on selected features
-│
-├── templates/
-│   └── index.html                      # Main web page (form + results)
-│
-├── static/
-│   └── style.css                       # Custom styles
-│
-└── README.md                           # This file
-```
-
----
-
-## 🚀 Getting Started
+## � Quick Start
 
 ### Prerequisites
+- Python 3.10+
+- pip
 
-- **Python 3.10** or higher
-- **pip** (comes with Python)
-- **Git**
-
-### 1. Clone the Repository
+### Setup (3 steps)
 
 ```bash
+# 1. Clone & navigate
 git clone https://github.com/Tanmay-Master/Customer_Churn_predicrion_financial.git
 cd Customer_Churn_predicrion_financial
-```
 
-### 2. Create a Virtual Environment
-
-**Windows:**
-```bash
+# 2. Create virtual environment
 python -m venv .venv
-.venv\Scripts\activate
-```
+.venv\Scripts\activate  # Windows
+# source .venv/bin/activate  # macOS/Linux
 
-**macOS / Linux:**
-```bash
-python3 -m venv .venv
-source .venv/bin/activate
-```
-
-### 3. Install Dependencies
-
-```bash
+# 3. Install & run
 pip install -r requirements.txt
-```
-
-This installs: Flask, Gunicorn, joblib, NumPy, Pandas, scikit-learn, and CatBoost.
-
-### 4. Run the Application
-
-```bash
 python app.py
 ```
 
-The app starts at **http://127.0.0.1:5000**. Open this URL in your browser.
-
-> **Note:** To run with Gunicorn (Linux/macOS only):
-> ```bash
-> gunicorn wsgi:app
-> ```
+Open **http://127.0.0.1:5000** in your browser.
 
 ---
 
-## ⚙️ How It Works
+## 📁 Coding Files Explained
 
-```
-┌──────────────┐     POST /predict     ┌──────────────┐     predict()     ┌─────────────────┐
-│              │ ──────────────────────►│              │ ─────────────────►│                 │
-│   Browser    │   8 form features     │  Flask App   │   feature array   │  CatBoost Model │
-│  (index.html)│ ◄──────────────────── │  (app.py)    │ ◄───────────────  │  (.pkl file)    │
-│              │   prediction result   │              │   probability     │                 │
-└──────────────┘                       └──────────────┘                   └─────────────────┘
-```
+### **app.py** — Main Application
+The Flask backend that handles everything.
 
-1. **User** fills in 8 customer attributes on the web form
-2. **Flask** receives the form data via `POST /predict`
-3. The data is converted to a feature array and passed to the **CatBoost model**
-4. The model returns a churn probability (0–100%)
-5. The probability is classified into a **risk level** (Low / Medium / High)
-6. The result is rendered back on the same page with a visual risk meter
+**Key Functions:**
+- `load_model()` — Loads the trained CatBoost model from `.pkl` file
+- `home()` — Renders the prediction form page
+- `predict()` — Processes form data, runs ML model, returns churn probability
+- `health()` — API endpoint for monitoring (returns `{"status": "ok", "model_loaded": true/false}`)
+
+**How it works:**
+1. User submits 8 customer features via HTML form
+2. Flask validates & converts data types (int/float)
+3. Creates pandas DataFrame with correct column order
+4. CatBoost model predicts churn probability (0-100%)
+5. Classifies risk level: Low (<30%) | Medium (30-69%) | High (≥70%)
+6. Returns result with color-coded risk badge
+
+**Key Features:**
+- Automatic model path detection (checks env variable, then `.pkl` files)
+- Error handling with user-friendly messages
+- Logging for debugging
+- Environment variable support (SECRET_KEY, MODEL_PATH, HOST, PORT, FLASK_DEBUG)
 
 ---
 
-## 📊 Input Features
+### **wsgi.py** — Production Server Entry Point
+Minimal file for Gunicorn (production WSGI server).
 
-The model expects these **8 features** (in order):
+```python
+from app import app
+```
 
-| # | Feature | Type | Description | Validation |
-|---|---|---|---|---|
-| 1 | **Total Logins** | Float | Number of times the customer logged in | ≥ 0 |
-| 2 | **Tickets Raised** | Integer | Support tickets submitted by the customer | ≥ 0 |
-| 3 | **Onboarding Year** | Integer | Year the customer joined | 2000 – current year |
-| 4 | **Customer Tenure** | Float | Years since onboarding (auto-calculated) | Read-only |
-| 5 | **Sentiment Score** | Float | Customer satisfaction score | 0.0 – 1.0 |
-| 6 | **Loans Accessed** | Float | Number of loan products viewed | ≥ 0 |
-| 7 | **Loans Taken** | Float | Number of loans actually taken | ≥ 0 |
-| 8 | **Monthly Avg Balance** | Float | Average monthly account balance | ≥ 0 |
+**Usage:** `gunicorn wsgi:app` (Linux/macOS only)
 
-### Risk Classification
+---
 
-| Churn Probability | Risk Level | Color |
+### **requirements.txt** — Dependencies
+Lists all Python packages needed.
+
+```
+Flask>=3.0          # Web framework
+gunicorn>=22.0      # Production server
+joblib>=1.3         # Model serialization
+pandas>=2.0         # Data processing
+numpy>=1.26         # Numerical computing
+scikit-learn>=1.4   # ML utilities
+catboost>=1.2       # ML model library
+seaborn>=0.12       # Data visualization (for notebooks)
+xgboost>=2.0        # Alternative ML (for notebooks)
+lightgbm>=4.0       # Alternative ML (for notebooks)
+```
+
+**Install:** `pip install -r requirements.txt`
+
+---
+
+### **Procfile** — Deployment Configuration
+Tells cloud platforms (Render, Heroku) how to run the app.
+
+```
+web: gunicorn wsgi:app
+```
+
+---
+
+## 📊 Data & Model Files
+
+| File | Purpose | Size |
 |---|---|---|
-| < 30% | 🟢 Low Risk | Green |
-| 30% – 69% | 🟠 Medium Risk | Orange |
-| ≥ 70% | 🔴 High Risk | Red |
+| `CatBoostClassifier.pkl` | Trained ML model (primary) | ~50MB |
+| `selectedCatBoostClassifier.pkl` | Trained ML model (backup) | ~50MB |
+| `customer_churn_data.csv` | Raw dataset (10 columns, ~10k rows) | ~2MB |
+| `Cleaned_Churn_Dataset.csv` | Cleaned dataset | ~2MB |
+| `Selected_features.csv` | Final 8 features + target | ~1MB |
+
+---
+
+## 📓 Jupyter Notebooks (Training)
+
+### **1_Train_model_Churn Prediction.ipynb**
+Complete ML pipeline:
+- Data exploration & visualization
+- Data cleaning & preprocessing
+- Feature engineering
+- Model comparison (CatBoost, XGBoost, LightGBM)
+- Hyperparameter tuning
+- Final model evaluation
+
+### **2.train selected dataset.ipynb**
+Simplified training on selected 8 features:
+- Loads cleaned data
+- Trains CatBoost on best features
+- Saves model as `.pkl`
+
+---
+
+## 🎨 Frontend Files
+
+### **templates/index.html**
+Single-page form with:
+- 8 input fields for customer data
+- Auto-calculated tenure (from onboarding year)
+- Form validation (client-side)
+- Results display with risk meter & color coding
+- Responsive Bootstrap 5 design
+
+### **static/style.css**
+Custom styling:
+- Risk meter visualization
+- Color-coded badges (green/orange/red)
+- Form styling & animations
+- Mobile responsive layout
 
 ---
 
 ## 🔌 API Endpoints
 
-| Method | Route | Description |
-|---|---|---|
-| `GET` | `/` | Renders the home page with the prediction form |
-| `POST` | `/predict` | Accepts form data, runs the model, returns results |
-| `GET` | `/health` | Returns JSON health status |
-
-### Health Check Response
-
-```json
-{
-  "status": "ok",
-  "model_loaded": true
-}
-```
+| Method | Route | Input | Output |
+|---|---|---|---|
+| `GET` | `/` | — | HTML form page |
+| `POST` | `/predict` | Form data (8 fields) | Prediction result + form |
+| `GET` | `/health` | — | `{"status": "ok", "model_loaded": bool}` |
 
 ---
 
-## 🔐 Environment Variables
+## 📥 Input Features (8 Required)
 
-All are optional — sensible defaults are provided:
+| # | Feature | Type | Range | Example |
+|---|---|---|---|---|
+| 1 | Total Logins | Float | ≥0 | 45.5 |
+| 2 | Tickets Raised | Integer | ≥0 | 3 |
+| 3 | Customer Tenure | Float | Auto-calculated | — |
+| 4 | Sentiment Score | Float | 0.0–1.0 | 0.75 |
+| 5 | Onboarding Year | Integer | 2000–current | 2020 |
+| 6 | Loans Accessed | Float | ≥0 | 2.0 |
+| 7 | Loans Taken | Float | ≥0 | 1.0 |
+| 8 | Monthly Avg Balance | Float | ≥0 | 5000.0 |
 
-| Variable | Default | Description |
+---
+
+## 📈 Output Format
+
+```json
+{
+  "prediction": "Will Churn" or "Will Not Churn",
+  "probability": 65.42,
+  "risk_level": "Medium Risk",
+  "risk_color": "orange"
+}
+```
+
+**Risk Classification:**
+- 🟢 **Low Risk** — <30% churn probability
+- 🟠 **Medium Risk** — 30–69% churn probability
+- 🔴 **High Risk** — ≥70% churn probability
+
+---
+
+## � Environment Variables
+
+| Variable | Default | Purpose |
 |---|---|---|
-| `SECRET_KEY` | Random (auto-generated) | Flask session secret key. **Set this in production!** |
-| `MODEL_PATH` | *(not set)* | Path to a custom model `.pkl` file |
+| `SECRET_KEY` | Auto-generated | Flask session encryption (set in production!) |
+| `MODEL_PATH` | Not set | Custom model file path |
 | `HOST` | `0.0.0.0` | Server bind address |
 | `PORT` | `5000` | Server port |
-| `FLASK_DEBUG` | `false` | Enable Flask debug mode (`true` / `false`) |
+| `FLASK_DEBUG` | `false` | Debug mode (`true`/`false`) |
 
-### Model Loading Priority
-
-The app searches for the model file in this order:
-1. Path specified in `MODEL_PATH` env variable
-2. `selectedCatBoostClassifier.pkl` (in project root)
-3. `CatBoostClassifier.pkl` (in project root)
+**Example `.env` file:**
+```
+SECRET_KEY=your-secret-key-here
+FLASK_DEBUG=false
+PORT=5000
+```
 
 ---
 
 ## ☁️ Deployment
 
-### Deploy on Render
+### **Render**
+1. Push to GitHub
+2. Go to render.com → New Web Service
+3. Connect repo
+4. Build: `pip install -r requirements.txt`
+5. Start: `gunicorn wsgi:app`
+6. Add env var: `SECRET_KEY=your-key`
 
-1. Push this repo to GitHub
-2. Go to [render.com](https://render.com) → **New Web Service**
-3. Connect your GitHub repository
-4. Configure:
-   - **Build Command:** `pip install -r requirements.txt`
-   - **Start Command:** `gunicorn wsgi:app`
-   - **Environment:** Python 3
-5. Add environment variable: `SECRET_KEY` = *(any random string)*
-6. Click **Deploy**
-
-### Deploy on Heroku
-
+### **Heroku**
 ```bash
-# Login to Heroku
 heroku login
-
-# Create app
 heroku create your-app-name
-
-# Set environment variable
-heroku config:set SECRET_KEY=your-secret-key-here
-
-# Deploy
+heroku config:set SECRET_KEY=your-key
 git push heroku main
 ```
 
-The `Procfile` (`web: gunicorn wsgi:app`) is already configured.
-
-### Deploy on Railway
-
-1. Push to GitHub
-2. Go to [railway.app](https://railway.app) → **New Project** → **Deploy from GitHub**
-3. Railway auto-detects the `Procfile`
-4. Add environment variable: `SECRET_KEY` = *(any random string)*
-5. Deploy
+### **Railway**
+1. Go to railway.app → New Project
+2. Connect GitHub repo
+3. Add env var: `SECRET_KEY=your-key`
+4. Deploy (auto-detects Procfile)
 
 ---
 
-## 🧪 Model Training
+## 🛠️ Tech Stack
 
-The model was trained using the Jupyter notebooks included in this repository:
-
-| Notebook | Purpose |
+| Layer | Technology |
 |---|---|
-| `1_Train_model_Churn Prediction.ipynb` | Full EDA, data cleaning, feature engineering, and model comparison |
-| `2.train selected dataset.ipynb` | Training on the selected feature subset |
-
-### Dataset
-
-- **Raw data:** `customer_churn_data.csv` (10 columns, ~10k records)
-- **Cleaned data:** `Cleaned_Churn_Dataset.csv`
-- **Selected features:** `Selected_features.csv` (8 features + target)
-
-### Target Variable
-
-- `Churned` — Binary (0 = Retained, 1 = Churned)
-
-### Algorithm
-
-- **CatBoost Classifier** — A gradient boosting algorithm optimized for categorical features
-- Serialized using `joblib` → `CatBoostClassifier.pkl`
+| **Backend** | Python 3.10+, Flask 3.x |
+| **ML Model** | CatBoost Classifier |
+| **Frontend** | HTML5, Bootstrap 5, Jinja2 |
+| **Server** | Gunicorn (production) |
+| **Data** | Pandas, NumPy, scikit-learn |
 
 ---
 
-## 📄 License
+## 📂 Project Structure
 
-This project is open source and available for educational and commercial use.
+```
+Customer_Churn_predicrion_financial/
+├── app.py                          # Main Flask app
+├── wsgi.py                         # Gunicorn entry point
+├── requirements.txt                # Dependencies
+├── Procfile                        # Deployment config
+├── .gitignore                      # Git ignore rules
+│
+├── CatBoostClassifier.pkl          # Trained model
+├── selectedCatBoostClassifier.pkl  # Backup model
+│
+├── customer_churn_data.csv         # Raw data
+├── Cleaned_Churn_Dataset.csv       # Cleaned data
+├── Selected_features.csv           # Final features
+│
+├── 1_Train_model_Churn Prediction.ipynb    # Full training
+├── 2.train selected dataset.ipynb          # Feature training
+│
+├── templates/
+│   └── index.html                  # Web form & results
+├── static/
+│   └── style.css                   # Styling
+└── README.md                       # This file
+```
 
 ---
 
-> **Built with** ❤️ using Flask + CatBoost
+## 🐛 Troubleshooting
+
+| Issue | Solution |
+|---|---|
+| Model not loading | Check `.pkl` file exists in project root or set `MODEL_PATH` env var |
+| Port 5000 in use | Change `PORT` env var: `set PORT=8000` (Windows) or `export PORT=8000` (Linux) |
+| Import errors | Run `pip install -r requirements.txt` again |
+| Form validation fails | Check input types match (int vs float) and ranges are valid |
+
+---
+
+## 📝 License
+
+Open source — free for educational & commercial use.
+
+---
+
+**Built with** ❤️ **using Flask + CatBoost**
